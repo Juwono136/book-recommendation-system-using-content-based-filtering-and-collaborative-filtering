@@ -280,6 +280,88 @@ Tabel 10. Hasil rekomendasi 5 judul buku teratas dengan kateogri nama penulis (b
 
 Berdasarkan Tabel 10, dapat dilihat bahwa sistem berhasil merekomendasikan 5 judul buku teratas dengan kategori nama penulis (book_author) yaitu 'Thomas Merton'.
 
+### Model Development dengan Collaborative Filtering
+Pada proses pengembangan model kali ini, akan diterapkan teknik collaborative filtering untuk membuat sistem rekomendasi. Teknik ini membutuhkan data rating dari pengguna atau pembaca. Collaborative filtering adalah salah satu metode dalam sistem rekomendasi yang memprediksi preferensi atau minat pengguna terhadap item berdasarkan informasi dari pengguna lain (kolaborasi). Ide dasar dibalik collaborative filtering adalah bahwa pengguna yang memiliki preferensi serupa dalam masa lalu cenderung memiliki preferensi serupa untuk item di masa depan. Pada proyek ini akan dibuat model collaborative filtering berdasarkan kesamaan antar pengguna (User-Based Collaborative Filtering). 
 
+Kelebihan Collaborative Filtering:
+- Dapat memberikan rekomendasi yang sangat personal kepada pengguna karena memanfaatkan preferensi dan perilaku pengguna secara langsung.
+- Tidak memerlukan pengetahuan mendalam tentang item atau produk yang direkomendasikan. Collaborative filtering hanya memerlukan pola preferensi pengguna.
+- Dapat menangani item baru yang belum memiliki sejarah penggunaan atau peringkat, karena rekomendasi didasarkan pada pola perilaku keseluruhan pengguna.
 
+Kekurangan Collaborative Filtering:
+- Collaborative filtering mengalami kesulitan saat menghadapi masalah cold start, karena tanpa data sejarah, sulit memberikan rekomendasi yang akurat.
+- Menghadapi masalah dengan data yang bersifat sparse (jarang), di mana mayoritas pengguna hanya memberikan peringkat atau preferensi untuk sebagian kecil item.
+- Perfoma collaborative filtering dapat menurun seiring dengan pertambahan jumlah pengguna atau item, karena perhitungan kesamaan antar pengguna atau item dapat menjadi lebih kompleks dan membutuhkan sumber daya yang signifikan.
 
+Goals atau tujuan pada proyek ini adalah menghasilkan rekomendasi sejumlah judul buku yang sesuai dengan preferensi pengguna berdasarkan rating yang telah diberikan sebelumnya. Dari data rating pengguna, akan diidentifikasi nama - nama judul buku yang mirip dan belum pernah dibaca atau dibeli oleh pengguna untuk direkomendasikan. Berikut adalah langkah - langkah sebelum melakukan proses training model dengan Collaborative Filtering pada proyek ini:
+- Memahami data rating yang dimiliki.
+- Menyandikan (encode) fitur 'User-ID' dan 'ISBN' ke dalam indeks integer.
+- Memetakan 'User-ID' dan 'ISBN'ke dataframe yang berkaitan.
+- Mengecek beberapa hal dalam data seperti jumlah pengguna, jumlah buku, kemudian mengubah nilai rating menjadi float.
+
+Setelah tahapan persiapan data diatas dilakukan, langkah selanjutnya dilakukan proses training model. Pada proses training, model menghitung skor kecocokan antara pengguna dan judul buku dengan teknik embedding. Pertama, dilakukan proses embedding terhadap data pengguna dan judul buku. Selanjutnya, lakukan operasi perkalian dot product antara embedding pengguna dan judul buku. Selain itu, ditambahkan bias untuk setiap pengguna dan judul buku. Skor kecocokan ditetapkan dalam skala [0,1] dengan fungsi aktivasi sigmoid. Model dibuatkan class RecommenderNet dengan [keras Model class](https://keras.io/api/models/model/). Kode class RecommenderNet ini terinspirasi dari tutorial dalam situs [keras](https://keras.io/examples/structured_data/collaborative_filtering_movielens/) dengan beberapa adaptasi layer yang menyesuaikan dengan kasus yang sedang dikerjakan. Model akan menggunakan Binary Crossentropy untuk menghitung loss function, Adam (Adaptive Moment Estimation) sebagai optimizer, dan Root Mean Squared Error (RMSE) sebagai metrik evaluasi. 
+
+#### Data Understanding
+Pada tahap ini, dilakukan pemahaman terlebih dahulu tentang data rating yang dimiliki. Ingat, pada saat proses load data di awal proyek ini dan membaca file ratings.csv. Saat itu, telah dibuat variabel ratings dan menetapkan data pada variabel tersebut. diketahui juga bahwa jumlah baris pada dataset rating sangatlah banyak yaitu 1.149.780. Sama seperti saat mengembangkan model dengan content based filtering, untuk menghemat alokasi memori pada saat pelatihan model, dataset tidak akan digunakan semua. Dataset rating hanya mengambil data pertama hingga data ke 5000 saja (exclude data ke 5000). Untuk memudahkan supaya tidak tertukar dengan fitur lain yang serupa, variabel diubah namanya menjadi df_rating.
+
+#### Data Preparation
+Pada tahap ini, dilakukan proses menyandikan (encode) fitur 'User-ID' dan 'ISBN' ke dalam indeks integer. Pertama, ubah User-ID menjadi list tanpa nilai yang sama. Kemudian, lakukan encoding User-ID dilanjutkan dengan melakukan proses encoding angka ke User-ID. Lakukan hal yang sama pada fitur ISBN. Berikutnya, petakan User-ID dan ISBN ke dalam bentuk dataframe yang berkaitan, dengan melakukan mapping User-ID ke dataframe 'user' dan ISBN ke dataframe 'book_title'. Setelah dataframe sudah dipersiapkan, langkah selanjutnya adalah membagi data untuk training dan validasi sebelum nantinya digunakan untuk model dengan collaborative filtering.
+
+#### Membagi Data Untuk Training dan Validasi
+Sebelum dilakukan proses pembagian data. Dataset akan diacak terlebih dahulu agar distribusinya menjadi random. Setelah itu, dilakukan proses pembagian data menjadi data train dan validasi dengan komposisi 80:20. Namun sebelumnya, perlu dipetakan (mapping) data user dan judul buku menjadi satu value terlebih dahulu. Kemudian, dibuat rating dalam skala 0 sampai 1 agar mudah dalam melakukan proses training.
+
+#### Proses Training
+Pada proses training model, model akan menghitung skor kecocokan antara pengguna dan judul buku dengan teknik embedding. Pertama, dilakukan proses embedding terhadap data user dan book_title. Selanjutnya, lakukan operasi perkalian dot product antara embedding user dan book_title. Selain itu, juga dapat ditambahkan bias untuk setiap user dan book_title. Skor kecocokan ditetapkan dalam skala [0, 1] dengan fungsi aktivasi sigmoid.
+
+Di sini, Model dibuatkan class RecommenderNet dengan [keras Model class](https://keras.io/api/models/model/). Kode class RecommenderNet ini terinspirasi dari tutorial dalam situs [keras](https://keras.io/examples/structured_data/collaborative_filtering_movielens/) dengan beberapa adaptasi layer yang menyesuaikan dengan kasus yang sedang dikerjakan. Class RecommenderNet ini akan berisi layer yang akan melatih model. Setelah layer model sudah dibuat, dilakukan proses compile terhadap model menggunakan Binary Crossentropy untuk menghitung loss function, Adam (Adaptive Moment Estimation) sebagai optimizer, dan root mean squared error (RMSE) sebagai metrics evaluation. 
+
+Berdasarkan hasil proses training model, didapat hasil yang cukup memuaskan dan model konvergen pada epochs sekitar 100. Dari proses ini, diperoleh nilai Root Mean Squared Error (RMSE) sebesar sekitar 0.0949 dan RMSE pada data validasi sebesar 0.3505. Nilai ini cukup bagus untuk sistem rekomendasi. Untuk mengetahui hasil dari pengembangan model, langkah selanjutnya adalah mendapatkan rekomendasi judul buku berdasarkan model yang dikembangan.
+
+#### Mendapatkan Rekomendasi Judul Buku
+Untuk mendapatkan rekomendasi judul buku, pertama diambil sampel user secara acak dan definisikan variabel `book_not_readed` yang merupakan daftar buku yang belum pernah dibaca atau dibeli oleh pengguna. variabel `book_not_readed` inilah yang akan menjadi judul buku yang direkomendasikan oleh sistem. Variabel `book_bot_visited` diperoleh dengan menggunakan operator bitwise (~) pada variabel `book_readed_by_user`. Selanjutnya, untuk memperoleh rekomendasi judul buku, digunakan fungsi model.predict() dari library Keras dan hasil output akan menampilkan top-N recommendation berdasarkan preferensi pengguna seperti terlihat pada Gambar 2.
+
+![cf02](https://github.com/Juwono136/book-recommendation-system-using-content-based-filtering-and-collaborative-filtering/assets/70443393/9e5da3a5-d681-4468-b3d0-95c88fb0386d)
+
+Gambar 2. Hasil top-N recommendation berdasarkan model yang dikembangkan dengan Collaborative Filtering.
+
+Berdasarkan Gambar 2, model telah berhasil membuat rekomendasi kepada user. Hasil tersebut adalah rekomendasi untuk user dengan id 276912. Dari output tersebut, dapat dibandingkan antara 'Book with high ratings from user' dan 'Top 10 books recomendation' untuk user. Perhatikan, beberapa judul buku rekomendasi menyediakan nama penulis bukunya juga yang sesuai dengan rating user. Diperoleh 10 top rekomendasi buku yang disertai juga dengan nama penulisnya untuk user tersebut serta terdapat 1 judul buku yang merupakan buku dengan rating tertinggi dari user.
+
+## Evaluation
+### Evaluasi Model dengan Content Based Filtering
+Metrik yang digunakan untuk evaluasi model dengan content based filtering di proyek kali ini adalah Precision, Recall, dan F1-Score. Metrik ini adalah metrik yang umum digunakan untuk mengukur kinerja model. Precision merupakan rasio item yang revelan yang dihasilkan oleh model terhadap total item yang dihasilkan. Recall merupakan rasio item relevan yang dihasilkan oleh model terhadap total item yang seharusnya direkomendasikan. Sedangkan, F1 Score adalah gabungan dari Precision dan Recall, memberikan nilai tunggal yang mengukur keseimbangan antara keduanya. Berikut adalah rumus untuk menghitung Precision, Recall, dan F1 Score pada model sistem rekomendasi berbasis konten:
+
+$$Precision = \frac{Jumlah\ item\ revelan\ yang\ dihasilkan}{Total\ item\ yang\ dihasilkan}$$
+
+$$Recall = \frac{Jumlah\ item\ relevan\ yang\ dihasilkan}{Total\ item\ yang\ seharusnya\ direkomendasikan}$$
+
+$$F1\ Score = 2 * \frac{Precision * Recall}{Precision + Recall}$$
+
+Sebelum menghitung nilai evaluasi metrik menggunakan precision, recall dan f1 score, diperlukan sebuah data yang terdiri dari label sebenarnya dan digunakan untuk menilai hasil prediksi model, data ini disebut sebagai data **ground truth**. Data ground truth pada proyek ini dibuat menggunakan hasil derajat kesamaan yang dihitung menggunakan teknik cosine similarity, dimana setiap baris dan kolom mewakili judul buku, dan nilai di setiap sel pada dataframe mewakili label. Angka 1 untuk similar, dan angka 0 untuk tidak similar. Perlu ditetapkan juga sebuah nilai ambang batas atau threshold untuk memutuskan apakah nilai similarity antara dua item harus dianggap 1 (similar) atau 0 (tidak similar). Nilai ambang batas atau threshold ditetapkan sebesar 0.5 pada proyek ini. Nilai threshold ini disesuaikan dengan kebutuhan dan karakteristik setelah melihat hasil rekomendasi sebelumnya. Lalu dibuatkan matriks ground truth menggunakan fungsi np.where() dari NumPy. Matriks ini akan memiliki nilai 1 di posisi di mana nilai cosine similarity antara dua item lebih besar atau sama dengan nilai threshold yang ditetapkan, dan nilai 0 di posisi di mana nilai similarity di bawah threshold. Kemudian, setelah matriks dibuat, hasilnya disajikan dalam bentuk dataframe. Baris dan kolom Dataframe ground truth ini diindeks menggunakan judul buku dari data. 
+
+Setelah dibuatkan matriks ground truth yang berisi label sebenarnya dari hasil cosine similarity. Selanjutnya, dilakukan proses perhitungan evaluasi model dengan metrik precision, recall, dan f1 score. Pertama, mengimport fungsi `precision_recall_fscore_support` dari [library Sklearn](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_fscore_support.html) yang digunakan untuk menghitung precision, recall dan f1 score. Lalu karena keterbatasan alokasi memori pada perangkat, data hanya diambil sekitar 10000 sampel dari cosine similarity dan ground truth matriks. Hal ini dilakukan untuk mempercepat proses perhitungan, terutama karena ukuran matriks yang cukup besar. Kemudian, matriks cosine similarity dan ground truth dikonversi menjadi array satu dimensi agar mempermudah perbandingan dan perhitungan metrik evaluasi. 
+
+Hasilnya disimpan dalam array `predictions`. Terakhir, digunakan fungsi `precision_recall_fscore_support` untuk menghitung precision, recall, dan f1 score. Parameter average='binary' digunakan karena sedang mengukur kinerja dalam konteks klasifikasi biner (1 atau 0). Parameter 'zero_division=1' digunakan untuk menghindari pembagian dengan nol jika ada kelas yang tidak terdapat di prediksi. Hasil evaluasi metriks bisa dilihat pada Gambar 3.
+
+![cf03](https://github.com/Juwono136/book-recommendation-system-using-content-based-filtering-and-collaborative-filtering/assets/70443393/035c148c-dbd6-4187-a483-de90d23ee087)
+
+Gambar 3. Hasil evaluasi metrik Precision, Recall, dan F1 Score terhadap model
+
+Berdasarkan Gambar 3, didapat nilai dari masing - masing metrik evaluasi yaitu precision, recall dan F1 Score. Nilai Precision didapat sebesar 1.0, artinya semua prediksi positif model adalah benar dan tidak terdapat false positive. Nilai recall didapat sekitar 0.7649 menunjukkan bahwa model berhasil mengidentifikasi sekitar 76.49% dari semua item yang sebenarnya relevan. Nilai F1 Score didapat sekitar 0.8668 (86.68%) menunjukkan keseimbangan yang baik antara precision dan recall dan model cenderung memberikan hasil yang cukup baik untuk kedua kelas (positif dan negatif). Kesimpulannya, berdasarkan hasil metrik evaluasi tersebut model bekerja dengan cukup baik dalam memberikan rekomendasi item dengan content based filtering.
+
+### Evaluasi Model dengan Collaborative Filtering
+Seperti yang sudah dilihat pada proses pelatihan model di bagian modeling. Metrik yang digunakan untuk melakukan evaluasi model pada model dengan Collaborative Filtering di proyek ini adalah [Root Mean Squared Error (RMSE)](https://www.statisticshowto.com/probability-and-statistics/regression-analysis/rmse-root-mean-square-error/). RMSE adalah metrik evaluasi yang umum digunakan untuk mengukur seberapa baik model memprediksi nilai kontinu dengan membandingkan nilai prediksi dengan nilai sebenarnya. Dalam konteks collaborative filtering, RMSE biasanya digunakan untuk mengukur seberapa baik model kolaboratif dalam memprediksi preferensi pengguna terhadap item. RMSE didefinisikan dalam persamaan berikut:
+
+$$RMSE = \sqrt{\frac{1}{N} \Sigma_{i=1}^N({y_i}- y\_pred_i)^2}$$
+
+Keterangan:
+- N adalah jumlah prediksi.
+- yi adalah nilai sebenarnya dari preferensi pengguna terhadap item.
+- y_pred adalah prediksi model terhadap preferensi pengguna terhadap item.
+
+Berdasarkan hasil proses training model pada tahap modeling, diperoleh hasil pelatihan berupa informasi RMSE di data train dan validasi. Untuk melihat visualisai proses training model, dilakukan proses plot metrik evaluasi dengan matplotlib dan terlihat seperti Gambar 4.
+
+![cf04](https://github.com/Juwono136/book-recommendation-system-using-content-based-filtering-and-collaborative-filtering/assets/70443393/ffb4cb6f-bd70-476f-9d36-1d5c9ff2b545)
+
+Gambar 4. Visualisasi dari metrik evaluasi model
+
+Berdasarkan Gambar 4 diketahui metrik evaluasi RMSE terhadap model yang dikembangkan. Terlihat hasil training model yang cukup smooth dan model konvergen pada epochs sekitar 100. Dari proses ini, diperoleh nilai error akhir sebesar 0.0949 dan error pada data validasi sebesar 0.3505. Nilai tersebut menunjukkan hasil yang cukup baik untuk sistem rekomendasi yang dihasilkan. Semakin kecil nilai RMSE, semakin baik model dalam memprediksi preferensi pengguna terhadap item. Hal inilah yang menyebabkan hasil rekomendasi dari model cukup akurat.
