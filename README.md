@@ -130,7 +130,8 @@ Pada tahap ini, akan dilakukan analisis dan eksplorasi pada setiap variabel untu
 - ratings : merupakan rating atau peringkat yang diberikan ke buku oleh pengguna atau pembaca
 - users : merupakan informasi pengguna termasuk informasi demografisnya.
 
-#### Books Variabel
+**Books Variabel**
+
 Dengan menggunakan fungsi info(), diketahui bahwa dataset books yang berasal dari file books.csv memiliki 271.360 entri dan terdiri dari 8 kolom yaitu ISBN, Book-Title, Book-Author, Year-Of-Publication, Publisher, Image-URL-S, Image-URL-M, dan Image-URL-L. Diketahui juga bahwa kolom 'Year-Of-Publication' bertipe data object sedangkan tahun publikasi pada umumnya memiliki tipe data integer. Oleh karena itu akan dilakukan perbaikan tipe data terlebih dahulu dengan menjalankan kode berikut: `books['Year-Of-Publication'].astype('int')`. Tetapi setelah dijalankan kode tersebut, terdapat error dengan tulisan `ValueError: invalid literal for int() with base 10: 'DK Publishing Inc'`, artinya terdapat value pada 'Year-Of-Publication' ada yang bernilai 'DK Publishing Inc'. Sepertinya ini terdapat kesalahan input, sehingga nanti akan dihapus nilai berupa teks tersebut sebelum mengubahnya ke dalam tipe data integer. Berdasarkan penelusuran, terdapat 2 nilai teks yaitu 'DK Publishing Inc' dan 'Gallimard'. Dua nilai teks ini akan dihapus dari fitur 'Year-Of-Publication'. Setelah dihapus, maka barulah dilakukan proses pengubahan tipe data pada 'Year-Of-Publication' menjadi tipe data integer.
 
 Kemudian, langkah selanjutnya adalah menghapus variabel yang tidak diperlukan pada proses pengembangan model. Karena nantinya pada sistem rekomendasi berbasis konten (content-based filtering) akan dibuat rekomendasi berdasarkan judul buku yang sama dengan nama penulis buku yang pernah dibaca oleh pengguna. Maka informasi seperti ukuran gambar tidak diperlukan, sehingga fitur/kolom 'Image-URL-S', 'Image-URL-M', dan 'Image-URL-L' bisa dihapus. Tampilan dataset books setelah dilakukan proses penghapusan beberapa nilai dan fitur akan terlihat seperti Tabel 4.
@@ -160,10 +161,12 @@ Gambar 1. Distribusi data tentang 10 nama penulis teratas berdasarkan jumlah buk
 
 Berdasarkan informasi pada Gambar 1, diketahui bahwa penulis dengan nama Agatha Christie menulis paling banyak buku yaitu sebanyak lebih dari 600 buku. Dari informasi ini juga diketahui jika di dalam dataset terdapat beberapa nama penulis yang menulis buku lebih dari satu judul buku.
 
-#### Ratings Variabel
+**Ratings Variabel**
+
 Selanjutnya, dilakukan eksplorasi pada variabel ratings, yaitu penilaian terhadap buku dari pembaca atau pengguna. Digunakan fungsi info() untuk melihat informasi dari variabel tersebut. Berdasarkan output yang diberikan, diketahui terdapat sebanyak 1.149.780 entri dan 3 kolom yaitu User-ID yang merupakan kode unik pengguna anonim yang memberikan peringkat, ISBN yang merupakan identitas berupa nomor unik buku, dan Book-Rating yang merupakan rating buku yang diberikan oleh pembaca atau pengguna. Diketahui juga terdapat 105.283 pengguna yang memberikan rating buku, jumlah buku berdasarkan ISBN yang diberikan rating adalah 340.556 buku, dan rating yang diberikan oleh masing - masing buku memiliki niliai berkisar antara 0 sampai 10, dimana 0 adalah rating paling rendah sedangkan 10 adalah rating paling tertinggi.
 
-#### Users Variabel
+**Users Variabel**
+
 Variabel terakhir yang akan dilakukan eksplorasi adalah variabel users. Variabel ini berisi informasi tentang pengguna anonim beserta demografinya. Digunakan fungsi info() untuk melihat informasi variabel. Berdasarkan output yang diberikan, diketahui terdapat 278.858 entri dan terdapat 3 variabel yaitu User-ID yang merupakan kode unik dari pengguna anonim, Location yang merupakan lokasi pengguna, dan Age yang merupakan usia pengguna. Diketahui juga terdapat beberapa pengguna yang usianya tidak diketahui. Data user berguna jika ingin membuat sistem rekomendasi berdasarkan demografi atau kondisi sosial pengguna. Namun, untuk studi kasus kali ini, tidak akan digunakan data users pada model. Pada pengembangan model, data yang digunakan adalah data books dan ratings.
 
 ### Data Preprocessing
@@ -318,13 +321,31 @@ Di sini, Model dibuatkan class RecommenderNet dengan [keras Model class](https:/
 Berdasarkan hasil proses training model, didapat hasil yang cukup memuaskan dan model konvergen pada epochs sekitar 100. Dari proses ini, diperoleh nilai Root Mean Squared Error (RMSE) sebesar sekitar 0.0949 dan RMSE pada data validasi sebesar 0.3505. Nilai ini cukup bagus untuk sistem rekomendasi. Untuk mengetahui hasil dari pengembangan model, langkah selanjutnya adalah mendapatkan rekomendasi judul buku berdasarkan model yang dikembangan.
 
 #### Mendapatkan Rekomendasi Judul Buku
-Untuk mendapatkan rekomendasi judul buku, pertama diambil sampel user secara acak dan definisikan variabel `book_not_readed` yang merupakan daftar buku yang belum pernah dibaca atau dibeli oleh pengguna. variabel `book_not_readed` inilah yang akan menjadi judul buku yang direkomendasikan oleh sistem. Variabel `book_bot_visited` diperoleh dengan menggunakan operator bitwise (~) pada variabel `book_readed_by_user`. Selanjutnya, untuk memperoleh rekomendasi judul buku, digunakan fungsi model.predict() dari library Keras dan hasil output akan menampilkan top-N recommendation berdasarkan preferensi pengguna seperti terlihat pada Gambar 2.
+Untuk mendapatkan rekomendasi judul buku, pertama diambil sampel user secara acak dan definisikan variabel `book_not_readed` yang merupakan daftar buku yang belum pernah dibaca atau dibeli oleh pengguna. variabel `book_not_readed` inilah yang akan menjadi judul buku yang direkomendasikan oleh sistem. Variabel `book_bot_visited` diperoleh dengan menggunakan operator bitwise (~) pada variabel `book_readed_by_user`. Selanjutnya, untuk memperoleh rekomendasi judul buku, digunakan fungsi model.predict() dari library Keras dan hasil output akan menampilkan top-N recommendation berdasarkan preferensi pengguna seperti terlihat pada Tabel 11.
 
-![cf02](https://github.com/Juwono136/book-recommendation-system-using-content-based-filtering-and-collaborative-filtering/assets/70443393/9e5da3a5-d681-4468-b3d0-95c88fb0386d)
+Tabel 11. Hasil top-N recommendation berdasarkan model yang dikembangkan dengan Collaborative Filtering
 
-Gambar 2. Hasil top-N recommendation berdasarkan model yang dikembangkan dengan Collaborative Filtering.
+| | |
+|-|-|
+|**Book with high ratings from user**| |
+|**book_title**|**book_author**|
+|One Thousand Chestnut Trees|Mira Stout|
+| | |
+|**Top 10 books recommendation**| |
+|**book_title**|**book_author**|
+|Silence of the Sirens|Adel Garcia Morales|
+|Politically Correct Bedtime Stories: Modern Tales for Our Life and Times|James Finn Garner|
+|Pioneers|James Finn Garner|
+|On Writing Well, 25th Anniversary : The Classic Guide to Writing Nonfiction (On Writing Well)|William Zinsser|
+|I Know This Much Is True (Oprah's Book Club)|Wally Lamb|
+|One for the Money (Stephanie Plum Novels (Paperback))|Janet Evanovich|
+|Simple Isn't Easy: How to Find Your Personal Style and Look Fantastic Every Day!|Olivia Goldsmith|
+|House of glass: A novel (Penguin international writers)|Pramoedya Ananta Toer|
+|This Time of Darkness|H. M. Hoover|
+|War and Peace (Penguin Classics)|Leo Tolstoy|
 
-Berdasarkan Gambar 2, model telah berhasil membuat rekomendasi kepada user. Hasil tersebut adalah rekomendasi untuk user dengan id 276912. Dari output tersebut, dapat dibandingkan antara 'Book with high ratings from user' dan 'Top 10 books recomendation' untuk user. Perhatikan, beberapa judul buku rekomendasi menyediakan nama penulis bukunya juga yang sesuai dengan rating user. Diperoleh 10 top rekomendasi buku yang disertai juga dengan nama penulisnya untuk user tersebut serta terdapat 1 judul buku yang merupakan buku dengan rating tertinggi dari user.
+
+Berdasarkan Tabel 11, model telah berhasil membuat rekomendasi kepada user. Hasil tersebut adalah rekomendasi untuk user dengan id 276912. Dari output tersebut, dapat dibandingkan antara 'Book with high ratings from user' dan 'Top 10 books recomendation' untuk user. Perhatikan, beberapa judul buku rekomendasi menyediakan nama penulis bukunya juga yang sesuai dengan rating user. Diperoleh 10 top rekomendasi buku yang disertai juga dengan nama penulisnya untuk user tersebut serta terdapat 1 judul buku yang merupakan buku dengan rating tertinggi dari user.
 
 ## Evaluation
 ### Evaluasi Model dengan Content Based Filtering
@@ -340,13 +361,13 @@ Sebelum menghitung nilai evaluasi metrik menggunakan precision, recall dan f1 sc
 
 Setelah dibuatkan matriks ground truth yang berisi label sebenarnya dari hasil cosine similarity. Selanjutnya, dilakukan proses perhitungan evaluasi model dengan metrik precision, recall, dan f1 score. Pertama, mengimport fungsi `precision_recall_fscore_support` dari [library Sklearn](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_fscore_support.html) yang digunakan untuk menghitung precision, recall dan f1 score. Lalu karena keterbatasan alokasi memori pada perangkat, data hanya diambil sekitar 10000 sampel dari cosine similarity dan ground truth matriks. Hal ini dilakukan untuk mempercepat proses perhitungan, terutama karena ukuran matriks yang cukup besar. Kemudian, matriks cosine similarity dan ground truth dikonversi menjadi array satu dimensi agar mempermudah perbandingan dan perhitungan metrik evaluasi. 
 
-Hasilnya disimpan dalam array `predictions`. Terakhir, digunakan fungsi `precision_recall_fscore_support` untuk menghitung precision, recall, dan f1 score. Parameter average='binary' digunakan karena sedang mengukur kinerja dalam konteks klasifikasi biner (1 atau 0). Parameter 'zero_division=1' digunakan untuk menghindari pembagian dengan nol jika ada kelas yang tidak terdapat di prediksi. Hasil evaluasi metriks bisa dilihat pada Gambar 3.
+Hasilnya disimpan dalam array `predictions`. Terakhir, digunakan fungsi `precision_recall_fscore_support` untuk menghitung precision, recall, dan f1 score. Parameter average='binary' digunakan karena sedang mengukur kinerja dalam konteks klasifikasi biner (1 atau 0). Parameter 'zero_division=1' digunakan untuk menghindari pembagian dengan nol jika ada kelas yang tidak terdapat di prediksi. Hasil evaluasi metriks didapat adalah sebagai berikut:
 
-![cf03](https://github.com/Juwono136/book-recommendation-system-using-content-based-filtering-and-collaborative-filtering/assets/70443393/035c148c-dbd6-4187-a483-de90d23ee087)
+- Precision: 1.0
+- Recall: 0.7648942386350357
+- F1-score: 0.8667876203467045
 
-Gambar 3. Hasil evaluasi metrik Precision, Recall, dan F1 Score terhadap model
-
-Berdasarkan Gambar 3, didapat nilai dari masing - masing metrik evaluasi yaitu precision, recall dan F1 Score. Nilai Precision didapat sebesar 1.0, artinya semua prediksi positif model adalah benar dan tidak terdapat false positive. Nilai recall didapat sekitar 0.7649 menunjukkan bahwa model berhasil mengidentifikasi sekitar 76.49% dari semua item yang sebenarnya relevan. Nilai F1 Score didapat sekitar 0.8668 (86.68%) menunjukkan keseimbangan yang baik antara precision dan recall dan model cenderung memberikan hasil yang cukup baik untuk kedua kelas (positif dan negatif). Kesimpulannya, berdasarkan hasil metrik evaluasi tersebut model bekerja dengan cukup baik dalam memberikan rekomendasi item dengan content based filtering.
+Berdasarkan hasil evaluasi metriks diatas, didapat nilai dari masing - masing metrik evaluasi yaitu precision, recall dan F1 Score. Nilai Precision didapat sebesar 1.0, artinya semua prediksi positif model adalah benar dan tidak terdapat false positive. Nilai recall didapat sekitar 0.7649 menunjukkan bahwa model berhasil mengidentifikasi sekitar 76.49% dari semua item yang sebenarnya relevan. Nilai F1 Score didapat sekitar 0.8668 (86.68%) menunjukkan keseimbangan yang baik antara precision dan recall dan model cenderung memberikan hasil yang cukup baik untuk kedua kelas (positif dan negatif). Kesimpulannya, berdasarkan hasil metrik evaluasi tersebut model bekerja dengan cukup baik dalam memberikan rekomendasi item dengan content based filtering.
 
 ### Evaluasi Model dengan Collaborative Filtering
 Seperti yang sudah dilihat pada proses pelatihan model di bagian modeling. Metrik yang digunakan untuk melakukan evaluasi model pada model dengan Collaborative Filtering di proyek ini adalah [Root Mean Squared Error (RMSE)](https://www.statisticshowto.com/probability-and-statistics/regression-analysis/rmse-root-mean-square-error/). RMSE adalah metrik evaluasi yang umum digunakan untuk mengukur seberapa baik model memprediksi nilai kontinu dengan membandingkan nilai prediksi dengan nilai sebenarnya. Dalam konteks collaborative filtering, RMSE biasanya digunakan untuk mengukur seberapa baik model kolaboratif dalam memprediksi preferensi pengguna terhadap item. RMSE didefinisikan dalam persamaan berikut:
@@ -358,10 +379,10 @@ Keterangan:
 - yi adalah nilai sebenarnya dari preferensi pengguna terhadap item.
 - y_pred adalah prediksi model terhadap preferensi pengguna terhadap item.
 
-Berdasarkan hasil proses training model pada tahap modeling, diperoleh hasil pelatihan berupa informasi RMSE di data train dan validasi. Untuk melihat visualisai proses training model, dilakukan proses plot metrik evaluasi dengan matplotlib dan terlihat seperti Gambar 4.
+Berdasarkan hasil proses training model pada tahap modeling, diperoleh hasil pelatihan berupa informasi RMSE di data train dan validasi. Untuk melihat visualisai proses training model, dilakukan proses plot metrik evaluasi dengan matplotlib dan terlihat seperti Gambar 2.
 
 ![cf04](https://github.com/Juwono136/book-recommendation-system-using-content-based-filtering-and-collaborative-filtering/assets/70443393/ffb4cb6f-bd70-476f-9d36-1d5c9ff2b545)
 
-Gambar 4. Visualisasi dari metrik evaluasi model
+Gambar 2. Visualisasi dari metrik evaluasi model
 
-Berdasarkan Gambar 4 diketahui metrik evaluasi RMSE terhadap model yang dikembangkan. Terlihat hasil training model yang cukup smooth dan model konvergen pada epochs sekitar 100. Dari proses ini, diperoleh nilai error akhir sebesar 0.0949 dan error pada data validasi sebesar 0.3505. Nilai tersebut menunjukkan hasil yang cukup baik untuk sistem rekomendasi yang dihasilkan. Semakin kecil nilai RMSE, semakin baik model dalam memprediksi preferensi pengguna terhadap item. Hal inilah yang menyebabkan hasil rekomendasi dari model cukup akurat.
+Berdasarkan Gambar 2 diketahui metrik evaluasi RMSE terhadap model yang dikembangkan. Terlihat hasil training model yang cukup smooth dan model konvergen pada epochs sekitar 100. Dari proses ini, diperoleh nilai error akhir sebesar 0.0949 dan error pada data validasi sebesar 0.3505. Nilai tersebut menunjukkan hasil yang cukup baik untuk sistem rekomendasi yang dihasilkan. Semakin kecil nilai RMSE, semakin baik model dalam memprediksi preferensi pengguna terhadap item. Hal inilah yang menyebabkan hasil rekomendasi dari model cukup akurat.
