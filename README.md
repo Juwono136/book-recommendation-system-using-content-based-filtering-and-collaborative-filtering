@@ -1,5 +1,8 @@
 # Sistem Rekomendasi Buku Menggunakan Model Pengembangan dengan Teknik Content Based Filtering dan Collaborative Filtering
 
+Untuk penjelasan dan file projek dalam versi Bahasa Inggris silahkan [klik disini](https://www.kaggle.com/code/juwonoindo/book-recommendation-system-cbf-and-cf)
+For the explanation and project files in the English version, please [click here](https://www.kaggle.com/code/juwonoindo/book-recommendation-system-cbf-and-cf)
+
 ## Project Overview
 
 Dalam era digital yang penuh informasi, literasi menghadapi tantangan menyajikan bacaan sesuai preferensi individu. Meskipun toko buku online dan layanan digital meningkatkan akses, jumlah opsi yang melimpah membuat pembaca kesulitan mencari buku yang sesuai dengan minat literasi individu. Proses pencarian buku menjadi memakan waktu dan membingungkan sehingga menghambat kegairahan membaca.
