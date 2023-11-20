@@ -1,5 +1,7 @@
 # Sistem Rekomendasi Buku Menggunakan Model Pengembangan dengan Teknik Content Based Filtering dan Collaborative Filtering
 
+![book-recommendation-cbf-cf](https://github.com/Juwono136/book-recommendation-system-using-content-based-filtering-and-collaborative-filtering/assets/70443393/88425585-bfa8-4d80-a8de-c8b926a46af3)
+
 Untuk penjelasan dan file projek dalam versi Bahasa Inggris silahkan [klik disini](https://www.kaggle.com/code/juwonoindo/book-recommendation-system-cbf-and-cf)<br>
 *For the explanation and project files in the English version, please [click here](https://www.kaggle.com/code/juwonoindo/book-recommendation-system-cbf-and-cf)*
 
