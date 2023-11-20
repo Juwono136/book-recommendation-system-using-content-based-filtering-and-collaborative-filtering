@@ -130,7 +130,8 @@ Pada tahap ini, akan dilakukan analisis dan eksplorasi pada setiap variabel untu
 - ratings : merupakan rating atau peringkat yang diberikan ke buku oleh pengguna atau pembaca
 - users : merupakan informasi pengguna termasuk informasi demografisnya.
 
-#### Books Variabel
+**Books Variabel**
+
 Dengan menggunakan fungsi info(), diketahui bahwa dataset books yang berasal dari file books.csv memiliki 271.360 entri dan terdiri dari 8 kolom yaitu ISBN, Book-Title, Book-Author, Year-Of-Publication, Publisher, Image-URL-S, Image-URL-M, dan Image-URL-L. Diketahui juga bahwa kolom 'Year-Of-Publication' bertipe data object sedangkan tahun publikasi pada umumnya memiliki tipe data integer. Oleh karena itu akan dilakukan perbaikan tipe data terlebih dahulu dengan menjalankan kode berikut: `books['Year-Of-Publication'].astype('int')`. Tetapi setelah dijalankan kode tersebut, terdapat error dengan tulisan `ValueError: invalid literal for int() with base 10: 'DK Publishing Inc'`, artinya terdapat value pada 'Year-Of-Publication' ada yang bernilai 'DK Publishing Inc'. Sepertinya ini terdapat kesalahan input, sehingga nanti akan dihapus nilai berupa teks tersebut sebelum mengubahnya ke dalam tipe data integer. Berdasarkan penelusuran, terdapat 2 nilai teks yaitu 'DK Publishing Inc' dan 'Gallimard'. Dua nilai teks ini akan dihapus dari fitur 'Year-Of-Publication'. Setelah dihapus, maka barulah dilakukan proses pengubahan tipe data pada 'Year-Of-Publication' menjadi tipe data integer.
 
 Kemudian, langkah selanjutnya adalah menghapus variabel yang tidak diperlukan pada proses pengembangan model. Karena nantinya pada sistem rekomendasi berbasis konten (content-based filtering) akan dibuat rekomendasi berdasarkan judul buku yang sama dengan nama penulis buku yang pernah dibaca oleh pengguna. Maka informasi seperti ukuran gambar tidak diperlukan, sehingga fitur/kolom 'Image-URL-S', 'Image-URL-M', dan 'Image-URL-L' bisa dihapus. Tampilan dataset books setelah dilakukan proses penghapusan beberapa nilai dan fitur akan terlihat seperti Tabel 4.
@@ -160,10 +161,14 @@ Gambar 1. Distribusi data tentang 10 nama penulis teratas berdasarkan jumlah buk
 
 Berdasarkan informasi pada Gambar 1, diketahui bahwa penulis dengan nama Agatha Christie menulis paling banyak buku yaitu sebanyak lebih dari 600 buku. Dari informasi ini juga diketahui jika di dalam dataset terdapat beberapa nama penulis yang menulis buku lebih dari satu judul buku.
 
-#### Ratings Variabel
+**Ratings Variabel**
+
 Selanjutnya, dilakukan eksplorasi pada variabel ratings, yaitu penilaian terhadap buku dari pembaca atau pengguna. Digunakan fungsi info() untuk melihat informasi dari variabel tersebut. Berdasarkan output yang diberikan, diketahui terdapat sebanyak 1.149.780 entri dan 3 kolom yaitu User-ID yang merupakan kode unik pengguna anonim yang memberikan peringkat, ISBN yang merupakan identitas berupa nomor unik buku, dan Book-Rating yang merupakan rating buku yang diberikan oleh pembaca atau pengguna. Diketahui juga terdapat 105.283 pengguna yang memberikan rating buku, jumlah buku berdasarkan ISBN yang diberikan rating adalah 340.556 buku, dan rating yang diberikan oleh masing - masing buku memiliki niliai berkisar antara 0 sampai 10, dimana 0 adalah rating paling rendah sedangkan 10 adalah rating paling tertinggi.
 
-#### Users Variabel
+Seperti terlihat pada informasi sebelumnya, dataset ratings memiliki 1.149.780 baris data, dan itu merupakan jumlah yang sangat banyak. Nantinya, dataset rating ini yang akan digunakan dalam proses pengembangan model dengan collaborative filtering. Oleh karena itu, untuk menghemat alokasi memori pada saat pelatihan model nantinya, dataset rating ini tidak akan digunakan semua. Dataset rating hanya mengambil data pertama hingga data ke 5000 saja (exclude data ke 5000). Dataset ini akan digunakan untuk pengembangan model dengan collaborative filtering karena membutuhkan data rating terhadap pengguna untuk memberikan rekomendasi judul buku kepada pengguna lainnya. Untuk memudahkan supaya tidak tertukar dengan fitur lain yang serupa, variabel diubah namanya menjadi df_rating.
+
+**Users Variabel**
+
 Variabel terakhir yang akan dilakukan eksplorasi adalah variabel users. Variabel ini berisi informasi tentang pengguna anonim beserta demografinya. Digunakan fungsi info() untuk melihat informasi variabel. Berdasarkan output yang diberikan, diketahui terdapat 278.858 entri dan terdapat 3 variabel yaitu User-ID yang merupakan kode unik dari pengguna anonim, Location yang merupakan lokasi pengguna, dan Age yang merupakan usia pengguna. Diketahui juga terdapat beberapa pengguna yang usianya tidak diketahui. Data user berguna jika ingin membuat sistem rekomendasi berdasarkan demografi atau kondisi sosial pengguna. Namun, untuk studi kasus kali ini, tidak akan digunakan data users pada model. Pada pengembangan model, data yang digunakan adalah data books dan ratings.
 
 ### Data Preprocessing
@@ -180,12 +185,19 @@ Tabel 5. Tampilan dari dataset yang sudah dilakukan proses penggabungan antara v
 |  4 |    276729 | 0521795028 |             6 | The Amsterdam Connection : Level 4 (Cambridge English Readers) | Sue Leather     |                  2001 | Cambridge University Press |
 
 ## Data Preparation
-Pada tahap ini di akan dilakukan beberapa teknik untuk mempersiapkan data seperti menghilangkan missing value dan menyamakan jenis buku. Pada sistem rekomendasi berbasis konten (content-based filtering) yang akan dikembangkan, satu nomor ISBN mewakili satu judul buku, yang artinya nomor ISBN pada setiap buku bersifat unik. 
+Karena terdapat dua jenis teknik yang digunakan pada proses pengembangan model, yaitu teknik content based filtering dan collaborative filtering, maka tahap persiapan data akan dibagi menjadi dua bagian, yaitu Data Preparation untuk Model Pengembangan dengan Content Based Filtering, dan Data Preparation untuk Model Pengembangan dengan Collaborative Filtering.
 
-### Mengatasi Missing Value
+### Data Preparation Untuk Model Pengembangan dengan Content Based Filtering
+Pada tahap ini di akan dilakukan beberapa teknik untuk mempersiapkan data seperti:
+- Menghilangkan missing value.
+- Menyamakan jenis buku berdasarkan ISBN.
+
+Pada sistem rekomendasi berbasis konten (content-based filtering) yang akan dikembangkan, satu nomor ISBN mewakili satu judul buku, yang artinya nomor ISBN pada setiap buku bersifat unik. Sehingga perlu dipersiapkan terlebih dahulu datanya agar siap untuk digunakan pada proses pelatihan model. 
+
+#### Mengatasi Missing Value
 Pertama dilakukan pengecekan missing value menggunakan kode berikut: `books.isnull().sum()`. Dari kode tersebut diketahui Terdapat banyak missing value pada sebagian besar fitur. Hanya fitur User-ID, ISBN, dan Book-Rating saja yang memiliki 0 missing value. Jumlah mising value terbesar ada di fitur 'Publisher' yaitu sebesar 118.650. 118.650 dari total dataset yaitu 1.149.780 merupakan jumlah yang tidak terlalu signifikan atau masih tergolong kecil. Oleh karena itu, untuk kasus ini dilakukan proses drop atau penghapusan pada missing value ini dan buatkan dalam bentuk variabel baru bernama all_books_clean. Setelah dilakukan proses penghilangan missing value, dataset terdiri dari 1.031.129 baris.
 
-### Menyamakan Jenis Buku Berdasarkan ISBN
+#### Menyamakan Jenis Buku Berdasarkan ISBN
 Selanjutnya, sebelum masuk tahap pemodelan, diperlukan proses menyamakan judul buku berdasarkan ISBN-nya. Jika terdapat nomor ISBN yang sama pada lebih dari satu judul buku dapat menyebabkan bias pada data. Oleh karena itu harus dipastikan bahwa hanya terdapat satu nomor ISBN pada satu judul buku saja. Pada proses ini dilakukan pengecekan ulang data setelah proses cleaning pada tahap sebelumnya. Berdasarkan informasi pada dataset, diketahui bahwa jumlah nomor ISBN dengan jumlah judul buku tidak sama, artinya terdapat nomor ISBN yang sama pada lebih dari satu judul buku. Oleh karena itu, diatasi dengan mengubah datasetnya menjadi data unik sehingga nantinya siap dimasukkan ke dalam proses pemodelan dengan cara membuang data duplikat pada kolom 'ISBN'. Setelah melewati proses menyamakan jumlah dari jenis buku berdasarkan ISBN, dataset hanya tersisa 270.145 baris data. Tahap berikutnya yaitu dibuatkan dictionary untuk menentukan pasangan key-value pada data isbn_id, book_title, book_author, year_of_publication, dan publihser yang sudah disiapkan sebelumnya untuk proses pengembangan model sistem rekomendasi berbasis konten (content-based filtering). Hasil pembuatan dictionary disimpan dalam variabel bernama books_new dan terlihat seperti pada Tabel 6.
 
 Tabel 6. Tampilan dataset books_new setelah menghilangkan missing value dan menyamakan jenis buku berdasarkan ISBN
@@ -199,6 +211,9 @@ Tabel 6. Tampilan dataset books_new setelah menghilangkan missing value dan meny
 |  4 | 000104687X | T.S. Eliot Reading \The Wasteland\" and Other Poems"           | T.S. Eliot                    |                  1993 | HarperCollins Publishers |
 
 Berdasarkan informasi sebelumnya, dataset memiliki sekitar 270.145 baris data. Karena dataset tersebut terlalu banyak dan secara otomatis alokasi memori yang digunakan nantinya akan sangat banyak untuk memproses seluruh data pada pengembangan model, maka pada proyek ini hanya akan mengambil data pertama hingga data ke 20.000 (exlude data ke 20.000). Dataset books_new inilah yang akan digunakan pada proses pengembangan model dengan teknik Content Based Filtering.
+
+### Data Preparation Untuk Model Pengembangan dengan Collaborative Filtering
+Pada model pengembangan dengan collaborative filtering, data nantinya akan dibagi menjadi data training dan data validasi dalam proses pelatihan model, sebelum di bagi menjadi data training dan data validasi, data harus dipersiapkan terlebih dahulu. Data rating harus diubah ke dalam bentuk matriks numerik agar nantinya mempermudah proses pelatihan model sehingga model menjadi mudah mengenali/mempelajari data tersebut. Sebelum itu dilakukan, Pada tahap ini di dilakukan beberapa teknik untuk mempersiapkan data seperti menyandikan (encode) fitur 'User-ID' dan 'ISBN' ke dalam indeks integer, memetakan 'User-ID' dan 'ISBN'ke dataframe yang berkaitan, dan yang terakhir mengecek beberapa hal dalam data seperti jumlah pengguna, jumlah buku, kemudian mengubah nilai rating menjadi float agar bisa digunakan pada proses pelatihan model. Setelah tahap persiapan data sudah selesai, data siap dibagi menjadi data training dan data validasi untuk proses training model.
 
 ## Modeling
 ### Model Development dengan Content Based Filtering
@@ -293,38 +308,47 @@ Kekurangan Collaborative Filtering:
 - Menghadapi masalah dengan data yang bersifat sparse (jarang), di mana mayoritas pengguna hanya memberikan peringkat atau preferensi untuk sebagian kecil item.
 - Perfoma collaborative filtering dapat menurun seiring dengan pertambahan jumlah pengguna atau item, karena perhitungan kesamaan antar pengguna atau item dapat menjadi lebih kompleks dan membutuhkan sumber daya yang signifikan.
 
-Goals atau tujuan pada proyek ini adalah menghasilkan rekomendasi sejumlah judul buku yang sesuai dengan preferensi pengguna berdasarkan rating yang telah diberikan sebelumnya. Dari data rating pengguna, akan diidentifikasi nama - nama judul buku yang mirip dan belum pernah dibaca atau dibeli oleh pengguna untuk direkomendasikan. Berikut adalah langkah - langkah sebelum melakukan proses training model dengan Collaborative Filtering pada proyek ini:
-- Memahami data rating yang dimiliki.
-- Menyandikan (encode) fitur 'User-ID' dan 'ISBN' ke dalam indeks integer.
-- Memetakan 'User-ID' dan 'ISBN'ke dataframe yang berkaitan.
-- Mengecek beberapa hal dalam data seperti jumlah pengguna, jumlah buku, kemudian mengubah nilai rating menjadi float.
+Pengembangan model dengan Collaborative filtering pada proyek ini akan menghasilkan rekomendasi sejumlah judul buku yang sesuai dengan preferensi pengguna berdasarkan rating yang telah diberikan sebelumnya. Dari data rating pengguna, akan diidentifikasi nama - nama judul buku yang mirip dan belum pernah dibaca atau dibeli oleh pengguna untuk direkomendasikan. 
 
-Setelah tahapan persiapan data diatas dilakukan, langkah selanjutnya dilakukan proses training model. Pada proses training, model menghitung skor kecocokan antara pengguna dan judul buku dengan teknik embedding. Pertama, dilakukan proses embedding terhadap data pengguna dan judul buku. Selanjutnya, lakukan operasi perkalian dot product antara embedding pengguna dan judul buku. Selain itu, ditambahkan bias untuk setiap pengguna dan judul buku. Skor kecocokan ditetapkan dalam skala [0,1] dengan fungsi aktivasi sigmoid. Model dibuatkan class RecommenderNet dengan [keras Model class](https://keras.io/api/models/model/). Kode class RecommenderNet ini terinspirasi dari tutorial dalam situs [keras](https://keras.io/examples/structured_data/collaborative_filtering_movielens/) dengan beberapa adaptasi layer yang menyesuaikan dengan kasus yang sedang dikerjakan. Model akan menggunakan Binary Crossentropy untuk menghitung loss function, Adam (Adaptive Moment Estimation) sebagai optimizer, dan Root Mean Squared Error (RMSE) sebagai metrik evaluasi. 
-
-#### Data Understanding
-Pada tahap ini, dilakukan pemahaman terlebih dahulu tentang data rating yang dimiliki. Ingat, pada saat proses load data di awal proyek ini dan membaca file ratings.csv. Saat itu, telah dibuat variabel ratings dan menetapkan data pada variabel tersebut. diketahui juga bahwa jumlah baris pada dataset rating sangatlah banyak yaitu 1.149.780. Sama seperti saat mengembangkan model dengan content based filtering, untuk menghemat alokasi memori pada saat pelatihan model, dataset tidak akan digunakan semua. Dataset rating hanya mengambil data pertama hingga data ke 5000 saja (exclude data ke 5000). Untuk memudahkan supaya tidak tertukar dengan fitur lain yang serupa, variabel diubah namanya menjadi df_rating.
-
-#### Data Preparation
-Pada tahap ini, dilakukan proses menyandikan (encode) fitur 'User-ID' dan 'ISBN' ke dalam indeks integer. Pertama, ubah User-ID menjadi list tanpa nilai yang sama. Kemudian, lakukan encoding User-ID dilanjutkan dengan melakukan proses encoding angka ke User-ID. Lakukan hal yang sama pada fitur ISBN. Berikutnya, petakan User-ID dan ISBN ke dalam bentuk dataframe yang berkaitan, dengan melakukan mapping User-ID ke dataframe 'user' dan ISBN ke dataframe 'book_title'. Setelah dataframe sudah dipersiapkan, langkah selanjutnya adalah membagi data untuk training dan validasi sebelum nantinya digunakan untuk model dengan collaborative filtering.
+Setelah tahapan persiapan data untuk pengembangan model ini sudah dilakukan di bagian data preparation sebelumnya, langkah selanjutnya dilakukan pembagian data untuk data training dan data validasi, kemudian dilanjutkan dengan proses training model. Pada proses training, model menghitung skor kecocokan antara pengguna dan judul buku dengan teknik embedding. Pertama, dilakukan proses embedding terhadap data pengguna dan judul buku. Selanjutnya, lakukan operasi perkalian dot product antara embedding pengguna dan judul buku. Selain itu, ditambahkan bias untuk setiap pengguna dan judul buku. Skor kecocokan ditetapkan dalam skala [0,1] dengan fungsi aktivasi sigmoid. Model dibuatkan class RecommenderNet dengan [keras Model class](https://keras.io/api/models/model/). Kode class RecommenderNet ini terinspirasi dari tutorial dalam situs [keras](https://keras.io/examples/structured_data/collaborative_filtering_movielens/) dengan beberapa adaptasi layer yang menyesuaikan dengan kasus yang sedang dikerjakan. Model akan menggunakan Binary Crossentropy untuk menghitung loss function, Adam (Adaptive Moment Estimation) sebagai optimizer, dan Root Mean Squared Error (RMSE) sebagai metrik evaluasi. 
 
 #### Membagi Data Untuk Training dan Validasi
-Sebelum dilakukan proses pembagian data. Dataset akan diacak terlebih dahulu agar distribusinya menjadi random. Setelah itu, dilakukan proses pembagian data menjadi data train dan validasi dengan komposisi 80:20. Namun sebelumnya, perlu dipetakan (mapping) data user dan judul buku menjadi satu value terlebih dahulu. Kemudian, dibuat rating dalam skala 0 sampai 1 agar mudah dalam melakukan proses training.
+Sebelum dilakukan proses pembagian data. Dataset akan diacak terlebih dahulu agar distribusinya menjadi random. Setelah itu, dilakukan proses pembagian data menjadi data train dan validasi dengan komposisi 90:10. Namun sebelumnya, perlu dipetakan (mapping) data user dan judul buku menjadi satu value terlebih dahulu. Kemudian, dibuat rating dalam skala 0 sampai 1 agar mudah dalam melakukan proses training.
 
 #### Proses Training
 Pada proses training model, model akan menghitung skor kecocokan antara pengguna dan judul buku dengan teknik embedding. Pertama, dilakukan proses embedding terhadap data user dan book_title. Selanjutnya, lakukan operasi perkalian dot product antara embedding user dan book_title. Selain itu, juga dapat ditambahkan bias untuk setiap user dan book_title. Skor kecocokan ditetapkan dalam skala [0, 1] dengan fungsi aktivasi sigmoid.
 
 Di sini, Model dibuatkan class RecommenderNet dengan [keras Model class](https://keras.io/api/models/model/). Kode class RecommenderNet ini terinspirasi dari tutorial dalam situs [keras](https://keras.io/examples/structured_data/collaborative_filtering_movielens/) dengan beberapa adaptasi layer yang menyesuaikan dengan kasus yang sedang dikerjakan. Class RecommenderNet ini akan berisi layer yang akan melatih model. Setelah layer model sudah dibuat, dilakukan proses compile terhadap model menggunakan Binary Crossentropy untuk menghitung loss function, Adam (Adaptive Moment Estimation) sebagai optimizer, dan root mean squared error (RMSE) sebagai metrics evaluation. 
 
-Berdasarkan hasil proses training model, didapat hasil yang cukup memuaskan dan model konvergen pada epochs sekitar 100. Dari proses ini, diperoleh nilai Root Mean Squared Error (RMSE) sebesar sekitar 0.0949 dan RMSE pada data validasi sebesar 0.3505. Nilai ini cukup bagus untuk sistem rekomendasi. Untuk mengetahui hasil dari pengembangan model, langkah selanjutnya adalah mendapatkan rekomendasi judul buku berdasarkan model yang dikembangan.
+Berdasarkan hasil proses training model, didapat hasil yang cukup memuaskan dan model konvergen pada epochs sekitar 50. Dari proses ini, diperoleh nilai Root Mean Squared Error (RMSE) sebesar sekitar 0.2007 dan RMSE pada data validasi sebesar 0.3424. Nilai ini cukup bagus untuk sistem rekomendasi. Untuk mengetahui hasil dari pengembangan model, langkah selanjutnya adalah mendapatkan rekomendasi judul buku berdasarkan model yang dikembangan.
 
 #### Mendapatkan Rekomendasi Judul Buku
-Untuk mendapatkan rekomendasi judul buku, pertama diambil sampel user secara acak dan definisikan variabel `book_not_readed` yang merupakan daftar buku yang belum pernah dibaca atau dibeli oleh pengguna. variabel `book_not_readed` inilah yang akan menjadi judul buku yang direkomendasikan oleh sistem. Variabel `book_bot_visited` diperoleh dengan menggunakan operator bitwise (~) pada variabel `book_readed_by_user`. Selanjutnya, untuk memperoleh rekomendasi judul buku, digunakan fungsi model.predict() dari library Keras dan hasil output akan menampilkan top-N recommendation berdasarkan preferensi pengguna seperti terlihat pada Gambar 2.
+Untuk mendapatkan rekomendasi judul buku, pertama diambil sampel user secara acak dan definisikan variabel `book_not_readed` yang merupakan daftar buku yang belum pernah dibaca atau dibeli oleh pengguna. variabel `book_not_readed` inilah yang akan menjadi judul buku yang direkomendasikan oleh sistem. Variabel `book_bot_visited` diperoleh dengan menggunakan operator bitwise (~) pada variabel `book_readed_by_user`. Selanjutnya, untuk memperoleh rekomendasi judul buku, digunakan fungsi model.predict() dari library Keras dan hasil output akan menampilkan top-N recommendation berdasarkan preferensi pengguna seperti terlihat pada Tabel 11 dan Tabel 12.
 
-![cf02](https://github.com/Juwono136/book-recommendation-system-using-content-based-filtering-and-collaborative-filtering/assets/70443393/9e5da3a5-d681-4468-b3d0-95c88fb0386d)
+Tabel 11. Hasil top-N recommendation berupa buku dengan nilai rating tertinggi dari user
 
-Gambar 2. Hasil top-N recommendation berdasarkan model yang dikembangkan dengan Collaborative Filtering.
+|    | Book Title                | Book Author     |
+|---:|:--------------------------|:----------------|
+|  0 | My \Star Trek\" Memories" | William Shatner |
 
-Berdasarkan Gambar 2, model telah berhasil membuat rekomendasi kepada user. Hasil tersebut adalah rekomendasi untuk user dengan id 276912. Dari output tersebut, dapat dibandingkan antara 'Book with high ratings from user' dan 'Top 10 books recomendation' untuk user. Perhatikan, beberapa judul buku rekomendasi menyediakan nama penulis bukunya juga yang sesuai dengan rating user. Diperoleh 10 top rekomendasi buku yang disertai juga dengan nama penulisnya untuk user tersebut serta terdapat 1 judul buku yang merupakan buku dengan rating tertinggi dari user.
+
+Tabel 12. Hasil top-N recommendation berupa 10 buku teratas yang direkomendasikan
+
+|    | Book Title                                                                                    | Book Author         |
+|---:|:----------------------------------------------------------------------------------------------|:--------------------|
+|  0 | Silence of the Sirens                                                                         | Adel Garcia Morales |
+|  1 | Politically Correct Bedtime Stories: Modern Tales for Our Life and Times                      | James Finn Garner   |
+|  2 | On Writing Well, 25th Anniversary : The Classic Guide to Writing Nonfiction (On Writing Well) | William Zinsser     |
+|  3 | Get Shorty                                                                                    | Elmore Leonard      |
+|  4 | One for the Money (Stephanie Plum Novels (Paperback))                                         | Janet Evanovich     |
+|  5 | Junky                                                                                         | William Burroughs   |
+|  6 | The Oranging of America and Other Stories                                                     | Max Apple           |
+|  7 | Joke                                                                                          | Milan Kundera       |
+|  8 | Tales of Mystery and Terror (Puffin Classics)                                                 | Edgar Allan Poe     |
+|  9 | War and Peace (Penguin Classics)                                                              | Leo Tolstoy         |
+
+
+Berdasarkan Tabel 11 dan Tabel 12, model telah berhasil membuat rekomendasi kepada user. Hasil tersebut adalah rekomendasi untuk user dengan id 276798. Dari output tersebut, dapat dibandingkan antara 'Book with high ratings from user' dan 'Top 10 books recomendation' untuk user. Perhatikan, beberapa judul buku rekomendasi menyediakan nama penulis bukunya juga yang sesuai dengan rating user. Diperoleh 10 rekomendasi teratas buku yang disertai juga dengan nama penulisnya untuk user tersebut serta terdapat 1 judul buku yang merupakan buku dengan rating tertinggi dari user.
 
 ## Evaluation
 ### Evaluasi Model dengan Content Based Filtering
@@ -340,13 +364,13 @@ Sebelum menghitung nilai evaluasi metrik menggunakan precision, recall dan f1 sc
 
 Setelah dibuatkan matriks ground truth yang berisi label sebenarnya dari hasil cosine similarity. Selanjutnya, dilakukan proses perhitungan evaluasi model dengan metrik precision, recall, dan f1 score. Pertama, mengimport fungsi `precision_recall_fscore_support` dari [library Sklearn](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_fscore_support.html) yang digunakan untuk menghitung precision, recall dan f1 score. Lalu karena keterbatasan alokasi memori pada perangkat, data hanya diambil sekitar 10000 sampel dari cosine similarity dan ground truth matriks. Hal ini dilakukan untuk mempercepat proses perhitungan, terutama karena ukuran matriks yang cukup besar. Kemudian, matriks cosine similarity dan ground truth dikonversi menjadi array satu dimensi agar mempermudah perbandingan dan perhitungan metrik evaluasi. 
 
-Hasilnya disimpan dalam array `predictions`. Terakhir, digunakan fungsi `precision_recall_fscore_support` untuk menghitung precision, recall, dan f1 score. Parameter average='binary' digunakan karena sedang mengukur kinerja dalam konteks klasifikasi biner (1 atau 0). Parameter 'zero_division=1' digunakan untuk menghindari pembagian dengan nol jika ada kelas yang tidak terdapat di prediksi. Hasil evaluasi metriks bisa dilihat pada Gambar 3.
+Hasilnya disimpan dalam array `predictions`. Terakhir, digunakan fungsi `precision_recall_fscore_support` untuk menghitung precision, recall, dan f1 score. Parameter average='binary' digunakan karena sedang mengukur kinerja dalam konteks klasifikasi biner (1 atau 0). Parameter 'zero_division=1' digunakan untuk menghindari pembagian dengan nol jika ada kelas yang tidak terdapat di prediksi. Hasil evaluasi metriks didapat adalah sebagai berikut:
 
-![cf03](https://github.com/Juwono136/book-recommendation-system-using-content-based-filtering-and-collaborative-filtering/assets/70443393/035c148c-dbd6-4187-a483-de90d23ee087)
+- Precision: 1.0
+- Recall: 1.0
+- F1-score: 1.0
 
-Gambar 3. Hasil evaluasi metrik Precision, Recall, dan F1 Score terhadap model
-
-Berdasarkan Gambar 3, didapat nilai dari masing - masing metrik evaluasi yaitu precision, recall dan F1 Score. Nilai Precision didapat sebesar 1.0, artinya semua prediksi positif model adalah benar dan tidak terdapat false positive. Nilai recall didapat sekitar 0.7649 menunjukkan bahwa model berhasil mengidentifikasi sekitar 76.49% dari semua item yang sebenarnya relevan. Nilai F1 Score didapat sekitar 0.8668 (86.68%) menunjukkan keseimbangan yang baik antara precision dan recall dan model cenderung memberikan hasil yang cukup baik untuk kedua kelas (positif dan negatif). Kesimpulannya, berdasarkan hasil metrik evaluasi tersebut model bekerja dengan cukup baik dalam memberikan rekomendasi item dengan content based filtering.
+Berdasarkan hasil evaluasi, didapat nilai dari masing - masing metrik evaluasi yaitu precision, recall dan F1 Score. Nilai Precision didapat sebesar 1.0, artinya semua prediksi positif model adalah benar dan tidak terdapat false positive. Nilai recall didapat nilai 1.0 menunjukkan bahwa model berhasil mengidentifikasi sekitar 100% dari semua item yang sebenarnya relevan. Nilai F1 Score didapat sekitar 1.0 juga, ini menunjukkan keseimbangan yang baik antara precision dan recall dan model cenderung memberikan hasil yang sangat baik untuk kedua kelas (positif dan negatif). Kesimpulannya, berdasarkan hasil metrik evaluasi tersebut model bekerja dengan sangat baik dalam memberikan rekomendasi item dengan content based filtering.
 
 ### Evaluasi Model dengan Collaborative Filtering
 Seperti yang sudah dilihat pada proses pelatihan model di bagian modeling. Metrik yang digunakan untuk melakukan evaluasi model pada model dengan Collaborative Filtering di proyek ini adalah [Root Mean Squared Error (RMSE)](https://www.statisticshowto.com/probability-and-statistics/regression-analysis/rmse-root-mean-square-error/). RMSE adalah metrik evaluasi yang umum digunakan untuk mengukur seberapa baik model memprediksi nilai kontinu dengan membandingkan nilai prediksi dengan nilai sebenarnya. Dalam konteks collaborative filtering, RMSE biasanya digunakan untuk mengukur seberapa baik model kolaboratif dalam memprediksi preferensi pengguna terhadap item. RMSE didefinisikan dalam persamaan berikut:
@@ -358,10 +382,10 @@ Keterangan:
 - yi adalah nilai sebenarnya dari preferensi pengguna terhadap item.
 - y_pred adalah prediksi model terhadap preferensi pengguna terhadap item.
 
-Berdasarkan hasil proses training model pada tahap modeling, diperoleh hasil pelatihan berupa informasi RMSE di data train dan validasi. Untuk melihat visualisai proses training model, dilakukan proses plot metrik evaluasi dengan matplotlib dan terlihat seperti Gambar 4.
+Berdasarkan hasil proses training model pada tahap modeling, diperoleh hasil pelatihan berupa informasi RMSE di data train dan validasi. Untuk melihat visualisai proses training model, dilakukan proses plot metrik evaluasi dengan matplotlib dan terlihat seperti Gambar 2.
 
-![cf04](https://github.com/Juwono136/book-recommendation-system-using-content-based-filtering-and-collaborative-filtering/assets/70443393/ffb4cb6f-bd70-476f-9d36-1d5c9ff2b545)
+![cf05](https://github.com/Juwono136/book-recommendation-system-using-content-based-filtering-and-collaborative-filtering/assets/70443393/d65dd634-f6f5-4578-9512-c74c4edce67d)
 
-Gambar 4. Visualisasi dari metrik evaluasi model
+Gambar 2. Visualisasi dari metrik evaluasi model
 
-Berdasarkan Gambar 4 diketahui metrik evaluasi RMSE terhadap model yang dikembangkan. Terlihat hasil training model yang cukup smooth dan model konvergen pada epochs sekitar 100. Dari proses ini, diperoleh nilai error akhir sebesar 0.0949 dan error pada data validasi sebesar 0.3505. Nilai tersebut menunjukkan hasil yang cukup baik untuk sistem rekomendasi yang dihasilkan. Semakin kecil nilai RMSE, semakin baik model dalam memprediksi preferensi pengguna terhadap item. Hal inilah yang menyebabkan hasil rekomendasi dari model cukup akurat.
+Berdasarkan Gambar 2 diketahui hasil visualisasi metrik evaluasi RMSE terhadap model yang dikembangkan, terlihat hasil model konvergen pada epochs sekitar 50 dan berdasarkan plot metriks model tidak ditemukan adanya indikasi model mengamali overfit atau underfit. Dari proses ini, diperoleh nilai error akhir sebesar 0.2007 dan error pada data validasi sebesar 0.3424. Nilai tersebut menunjukkan hasil yang cukup baik untuk sistem rekomendasi yang dihasilkan. Semakin kecil nilai RMSE, semakin baik model dalam memprediksi preferensi pengguna terhadap item. Hal inilah yang menyebabkan hasil rekomendasi dari model cukup akurat.
