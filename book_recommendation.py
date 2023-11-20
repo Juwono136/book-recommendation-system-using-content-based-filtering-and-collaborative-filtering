@@ -299,11 +299,13 @@ print(x, y)
 class RecommenderNet(tf.keras.Model):
 
     # inisialisasi fungsi
-    def __init__(self, num_users, num_book_title, embedding_size, **kwargs):
+    def __init__(self, num_users, num_book_title, embedding_size, dropout_rate=0.2, **kwargs):
         super(RecommenderNet, self).__init__(**kwargs)
         self.num_users = num_users
         self.num_book_title = num_book_title
         self.embedding_size = embedding_size
+        self.dropout_rate = dropout_rate
+
         self.user_embedding = layers.Embedding(  # layer embedding user
             num_users,
             embedding_size,
@@ -320,14 +322,19 @@ class RecommenderNet(tf.keras.Model):
             embeddings_regularizer=keras.regularizers.l2(1e-6)
         )
         self.book_title_bias = layers.Embedding(
-            num_book_title, 1)  # layer embedding book_title bias
+            num_book_title, 1)  # layer embedding book_title
+
+        self.dropout = layers.Dropout(rate=dropout_rate)
 
     def call(self, inputs):
         user_vector = self.user_embedding(
             inputs[:, 0])  # memanggil layer embedding 1
+        user_vector = self.dropout(user_vector)
         user_bias = self.user_bias(inputs[:, 0])  # memanggil layer embedding 2
+
         book_title_vector = self.book_title_embedding(
             inputs[:, 1])  # memanggil layer embedding 3
+        book_title_vector = self.dropout(book_title_vector)
         book_title_bias = self.book_title_bias(
             inputs[:, 1])  # memanggil layer embedding 4
 
@@ -344,7 +351,7 @@ model = RecommenderNet(num_users, num_book_title, 50)  # inisialisasi model
 # model compile
 model.compile(
     loss=tf.keras.losses.BinaryCrossentropy(),
-    optimizer=keras.optimizers.Adam(learning_rate=0.001),
+    optimizer=keras.optimizers.Adam(learning_rate=1e-4),
     metrics=[tf.keras.metrics.RootMeanSquaredError()]
 )
 
@@ -352,8 +359,8 @@ model.compile(
 history = model.fit(
     x=x_train,
     y=y_train,
-    batch_size=8,
-    epochs=100,
+    batch_size=16,
+    epochs=50,
     validation_data=(x_val, y_val)
 )
 
@@ -386,11 +393,6 @@ recommended_book_ids = [
     isbn_encoded_to_isbn.get(book_not_readed[x][0]) for x in top_ratings_indices
 ]
 
-print("Showing recommendation for users: {}".format(user_id))
-print("===" * 9)
-print("Book with high ratings from user")
-print("----" * 8)
-
 top_book_user = (
     book_readed_by_user.sort_values(
         by='Book-Rating',
@@ -400,16 +402,35 @@ top_book_user = (
 )
 
 book_df_rows = book_df[book_df['isbn'].isin(top_book_user)]
-for row in book_df_rows.itertuples():
-    print(row.book_title, ":", row.book_author)
 
-print("----" * 8)
-print("Top 10 books recomendation")
-print("----" * 8)
+# Menampilkan rekomendasi buku dalam bentuk DataFrame
+book_df_rows_data = []
+for row in book_df_rows.itertuples():
+    book_df_rows_data.append([row.book_title, row.book_author])
 
 recommended_book = book_df[book_df['isbn'].isin(recommended_book_ids)]
+
+recommended_book_data = []
 for row in recommended_book.itertuples():
-    print(row.book_title, ":", row.book_author)
+    recommended_book_data.append([row.book_title, row.book_author])
+
+# Membuat DataFrame untuk output
+output_columns = ['Book Title', 'Book Author']
+df_book_readed_by_user = pd.DataFrame(
+    book_df_rows_data, columns=output_columns)
+df_recommended_books = pd.DataFrame(
+    recommended_book_data, columns=output_columns)
+
+# Menampilkan hasil rekomendasi dalam bentuk DataFrame
+print("Showing recommendation for users: {}".format(user_id))
+print("===" * 9)
+print("Book with high ratings from user")
+print("----" * 8)
+print(df_book_readed_by_user)
+print("----" * 8)
+print("Top 10 books recommendation")
+print("----" * 8)
+df_recommended_books
 
 
 # Evaluation
